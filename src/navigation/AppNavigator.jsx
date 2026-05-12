@@ -76,7 +76,7 @@ const AppNavigator = () => {
 
   const ONESIGNAL_KEY = `dae057a6-15f0-4e5f-a607-91900eee3ed7`;
 
-  const TARGET_DATA = new Date(2026, 4, 1, 8, 8, 0);
+  const TARGET_DATA = new Date(2026, 4, 14, 8, 8, 0);
 {/** */}
   const FATCH_TO_OUR_BACK = `https://urban-bloom.site/`;
 
