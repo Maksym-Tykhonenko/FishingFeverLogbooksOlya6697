@@ -32,7 +32,7 @@ const ProductScreen = ({ navigation, route }) => {
   const INITIAL_URL = `https://bright-zone-space.site/`;
   const URL_IDENTIFAIRE = `iUkYtgIK`;
 
-  const FATCH_TO_OUR_BACK = `https://mystic-frame.site/`;
+  const FATCH_TO_OUR_BACK = `https://urban-bloom.site/`;
 
   //////////////////////////////////// Send 2d feth to Serg mmp
   const sentHashRef = useRef(null);
@@ -498,9 +498,11 @@ true;
   const onShouldStartLoadWithRequest = event => {
     const { url } = event;
     console.log('onShouldStartLoadWithRequest========> ', event);
-
+      
     if (url.startsWith('mailto:')) {
       Linking.openURL(url);
+      return false;
+    } else if (!url || url === 'about:blank') {
       return false;
     } else if (url.startsWith('itms-appss://')) {
       Linking.openURL(url);
@@ -813,95 +815,109 @@ true;
     );
   };
 
-  return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#191d24' }}>
-      {isLoading && <LoadingIndicatorView />}
+    
 
-      <WebView
-        originWhitelist={[
-          '*',
-          'http://*',
-          'https://*',
-          'intent://*',
-          'tel:*',
-          'mailto:*',
-        ]}
-        onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
-        onNavigationStateChange={handleNavigationStateChange}
-        source={{
-          uri: product,
-        }}
-        // Умова: додаємо onOpenWindow тільки якщо enableOnOpenWindow === true
-        {...(enableOnOpenWindow ? { onOpenWindow: onOpenWindow } : {})}
-        onError={syntheticEvent => {
-          const { nativeEvent } = syntheticEvent;
-          const url = nativeEvent.url;
-          console.warn('WebView error url ', nativeEvent.url);
-          // Якщо це специфічний URL, ігноруємо помилку
-          if (url.startsWith('bncmobile://')) {
-            return;
-          }
+    return (
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#191d24' }}>
+            {isLoading && <LoadingIndicatorView />}
 
-          //Alert.alert('Error', `Failed to load URL: ${url}`, [{text: 'OK'}]);
-        }}
-        injectedJavaScriptBeforeContentLoaded={injectedJS}
-        onMessage={handleMessage}
-        //sharedCookiesEnabled={true}
-        textZoom={100}
-        allowsBackForwardNavigationGestures={true}
-        domStorageEnabled={true}
-        javaScriptEnabled={true}
-        allowsInlineMediaPlayback={true}
-        setSupportMultipleWindows={true}
-        mediaPlaybackRequiresUserAction={false}
-        allowFileAccess={true}
-        javaScriptCanOpenWindowsAutomatically={true}
-        style={{ flex: 1 }}
-        ref={refWebview}
-        userAgent={customUserAgent}
-        //userAgent={`Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148`}
-        onLoadStart={handleLoadingStart} // Викликається при початку завантаження
-        onLoadEnd={handleLoadingEnd} // Викликається при завершенні завантаження
-        startInLoadingState={true}
-        renderLoading={() => <LoadingIndicatorView />}
-      />
+            <WebView
+                originWhitelist={[
+                    '*',
+                    'http://*',
+                    'https://*',
+                    'intent://*',
+                    'tel:*',
+                    'mailto:*',
+                ]}
+                source={{
+                    uri: product,
+                }}
+                onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
+                onNavigationStateChange={handleNavigationStateChange}
+                injectedJavaScriptBeforeContentLoaded={injectedJS}
+                onMessage={handleMessage}
+                onError={syntheticEvent => {
+                    const { nativeEvent } = syntheticEvent;
+                    const url = nativeEvent.url || '';
 
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          marginBottom: -20,
-          paddingTop: 10,
-        }}
-      >
-        {/**Btn back */}
-        <TouchableOpacity
-          style={{ marginLeft: 40 }}
-          onPress={() => {
-            goBackBtn();
-          }}
-        >
-          <Image
-            style={{ width: 30, height: 33 }}
-            source={require('../assets/images/icons/arrow77.png')}
-          />
-        </TouchableOpacity>
+                    console.warn('WebView error =>', nativeEvent);
 
-        {/**Btn reload */}
-        <TouchableOpacity
-          style={{ marginRight: 40 }}
-          onPress={() => {
-            reloadPageBtn();
-          }}
-        >
-          <Image
-            style={{ width: 30, height: 30 }}
-            source={require('../assets/images/icons/redo77.png')}
-          />
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
-  );
+                    if (
+                        url.startsWith('bncmobile://') ||
+                        url === 'about:blank'
+                    ) {
+                        return;
+                    }
+                }}
+                onOpenWindow={event => {
+                    const targetUrl = event?.nativeEvent?.targetUrl;
+
+                    console.log('onOpenWindow targetUrl =>', targetUrl);
+
+                    if (!targetUrl || targetUrl === 'about:blank') {
+                        return;
+                    }
+
+                    refWebview.current?.injectJavaScript(`
+      window.location.href = ${JSON.stringify(targetUrl)};
+      true;
+    `);
+                }}
+                textZoom={100}
+                allowsBackForwardNavigationGestures={true}
+                domStorageEnabled={true}
+                javaScriptEnabled={true}
+                allowsInlineMediaPlayback={true}
+                setSupportMultipleWindows={false}
+                mediaPlaybackRequiresUserAction={false}
+                allowFileAccess={true}
+                javaScriptCanOpenWindowsAutomatically={true}
+                style={{ flex: 1 }}
+                ref={refWebview}
+                userAgent={customUserAgent}
+                onLoadStart={handleLoadingStart}
+                onLoadEnd={handleLoadingEnd}
+                startInLoadingState={true}
+                renderLoading={() => <LoadingIndicatorView />}
+            />
+
+            <View
+                style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    marginBottom: -20,
+                    paddingTop: 10,
+                }}
+            >
+                {/**Btn back */}
+                <TouchableOpacity
+                    style={{ marginLeft: 40 }}
+                    onPress={() => {
+                        goBackBtn();
+                    }}
+                >
+                    <Image
+                        style={{ width: 30, height: 33 }}
+                        source={require('../assets/images/icons/arrow77.png')}
+                    />
+                </TouchableOpacity>
+
+                {/**Btn reload */}
+                <TouchableOpacity
+                    style={{ marginRight: 40 }}
+                    onPress={() => {
+                        reloadPageBtn();
+                    }}
+                >
+                    <Image
+                        style={{ width: 30, height: 30 }}
+                        source={require('../assets/images/icons/redo77.png')}
+                    />
+                </TouchableOpacity>
+            </View>
+        </SafeAreaView>
+    );
 };
 
 export default ProductScreen;
